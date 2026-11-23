@@ -3,8 +3,8 @@
     python download_model.py
     python chat.py --ckpt models/instruct.pt
 
-It downloads bishlm-v1.zip (about 99 MB) from bishrulhaq.com, checks its SHA-256,
-and unpacks it here:
+It downloads bishlm-v1.zip (about 99 MB) from bishrulhaq.com (or, if that fails,
+from the GitHub release), checks its SHA-256, and unpacks it here:
 
     models/bishlm.pt      the base model (writes stories)
     models/instruct.pt    the instruction-tuned model (follows requests, story chat)
@@ -19,12 +19,15 @@ import sys
 import urllib.request
 import zipfile
 
-URL = "https://bishrulhaq.com/downloads/bishlm-v1.zip"
+URLS = [
+    "https://bishrulhaq.com/downloads/bishlm-v1.zip",
+    "https://github.com/bishrulhaq/BishLM/releases/download/v1.0/bishlm-v1.zip",
+]
 SHA256 = "7a440456965c188b975e2d0351cd095b62db163c38d479aee41a47d3c6126245"
 FILES = ["models/bishlm.pt", "models/instruct.pt", "data/tokenizer.json"]
 
 p = argparse.ArgumentParser()
-p.add_argument("--url", default=URL, help="where to download the zip from")
+p.add_argument("--url", help="download from this address instead")
 p.add_argument("--keep-zip", action="store_true", help="keep the zip after unpacking")
 args = p.parse_args()
 
@@ -56,8 +59,17 @@ def sha256(path):
 
 
 if not (os.path.exists(zip_path) and sha256(zip_path) == SHA256):
-    print(f"downloading {args.url}")
-    download(args.url, zip_path)
+    for url in [args.url] if args.url else URLS:
+        try:
+            print(f"downloading {url}")
+            download(url, zip_path)
+            if sha256(zip_path) == SHA256:
+                break
+            print("  the file did not match, trying the next place")
+        except OSError as e:  # no connection, 404, ...
+            print(f"  could not download it: {e}")
+    if not os.path.exists(zip_path):
+        sys.exit("could not download the model. Check your internet connection and try again.")
 
 if sha256(zip_path) != SHA256:
     os.remove(zip_path)

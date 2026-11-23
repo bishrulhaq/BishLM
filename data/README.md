@@ -10,7 +10,8 @@ python download_model.py
 
 This downloads the trained BishLM from
 [bishrulhaq.com/downloads/bishlm-v1.zip](https://bishrulhaq.com/downloads/bishlm-v1.zip)
-(about 99 MB) and puts `tokenizer.json` here and the two models in `models/`.
+(about 99 MB; if the site is down, from the GitHub release instead) and puts `tokenizer.json`
+here and the two models in `models/`.
 
 **Train your own:**
 

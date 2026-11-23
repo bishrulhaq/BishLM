@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 ## Try it without training
 
-Download the trained model (about 99 MB) and chat with it:
+Download the trained model (about 99 MB, from [bishrulhaq.com](https://bishrulhaq.com/downloads/bishlm-v1.zip) or the [GitHub release](https://github.com/bishrulhaq/BishLM/releases)) and chat with it:
 
 ```bash
 python download_model.py
