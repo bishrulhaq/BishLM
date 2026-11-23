@@ -1,5 +1,7 @@
 # BishLM
 
+![Meet BishLM](docs/images/meet-bishlm.png)
+
 A small language model, built from scratch in PyTorch and trained on a MacBook. It uses five ideas from three of 2026's best open models:
 
 | Idea | Borrowed from | What it does | Code |
@@ -13,6 +15,13 @@ A small language model, built from scratch in PyTorch and trained on a MacBook. 
 BishLM is **inspired by** these models. It uses none of their code or weights. [docs/sources.md](docs/sources.md) lists what each real model does, with links to the primary sources, and what BishLM simplifies.
 
 Every idea has an on/off switch in [bishlm/config.py](bishlm/config.py), so you can train with and without it and compare.
+
+![The five ideas: mixture of experts, fixed-size memory, n-gram embeddings, guess two ahead, four-lane highway. 25.9 million parameters, 9.0 million used per token](docs/images/five-ideas.png)
+
+<p>
+  <img src="docs/images/mixture-of-experts.png" width="49%" alt="A router scores 8 experts for the token 'cat'; the top 2 run, plus 1 shared expert">
+  <img src="docs/images/kda-memory.png" width="49%" alt="Full attention keeps every past token; KDA keeps one small notebook per head that never grows">
+</p>
 
 ## Setup
 
@@ -39,10 +48,12 @@ This downloads [TinyStories](https://huggingface.co/datasets/roneneldan/TinyStor
 ```bash
 python train.py --preset small --minutes 10 --out runs/first     # a quick first run
 python train.py --preset bishlm --steps 45000 --out runs/bishlm  # the full model (overnight)
-python train.py --preset plain  --steps 20000 --out runs/plain   # a plain transformer, to compare
+python train.py --preset plain  --steps 45000 --out runs/plain   # a plain transformer, to compare
 ```
 
 The script prints the loss and a sample story as it trains. It saves `ckpt.pt` and `log.jsonl` in the output folder.
+
+![The overnight run: the training loss of BishLM and the plain model over 45,000 steps](docs/images/overnight-run.png)
 
 To see what one idea changes, use the presets that switch a single idea off: `small-no-moe`, `small-no-linear`, `small-no-ngram`, `small-no-mtp` and `small-no-mhc`.
 
@@ -73,6 +84,8 @@ NoPE attention do not depend on positions, so it already reads 512 tokens well. 
 `python check_length.py --ckpt runs/bishlm/ckpt.pt --length 1024`. (At 512 tokens,
 `torch.compile` makes a kernel too big for Apple GPUs, so this run uses `--no-compile`.)
 
+![Trained on 256 tokens and tested on 1,024: BishLM's loss stays about the same up to 512 tokens, while the plain model breaks right after 256](docs/images/context-length.png)
+
 ## 5. Chat with it
 
 ```bash
@@ -83,13 +96,31 @@ Ask for a story, type `continue` for more of it, or `quit`. It is a story chat, 
 it cannot change a story or answer questions about it, because it never saw examples of that.
 It only remembers its last 512 tokens.
 
+![The story chat: a request, two "continue"s until the story ends, then a new request](docs/images/story-chat.png)
+
+## Results
+
+All numbers come from the runs in the video, on an M1 Pro with 16 GB.
+
+- **Quality.** After the same 45,000 steps (184 million tokens), BishLM reaches a validation loss of 1.33 and the plain model 1.46. Lower is better.
+- **The catch.** BishLM is bigger and slower: it trained for 9 h 27 min, the plain model for 2 h 25 min. After 2 h 25 min BishLM was still at 1.65, so for the same training time the plain model wins at this tiny size.
+- **Each idea.** Six small runs of 2,000 steps, each with one idea switched off. Every idea helped a little. Without it, the loss went up by: experts +0.034, four lanes +0.032, n-grams +0.026, look-ahead +0.015, KDA +0.008. That is one run each, so take it as a hint, not proof.
+- **Writing with drafts.** Speculative decoding with the MTP head goes from 12.1 to 18.4 tokens a second (1.5×), with 1.65 tokens per pass. Every token is still sampled from the main model, so the quality is the same. With temperature 0 the text is identical.
+- **Instruction tuning.** 2,000 steps at 512 tokens took 37 minutes (validation loss 1.27). In the words test it used "ice cream" and "shop", but forgot "dragon".
+
+![Validation loss of BishLM and the plain model, the training-time catch, and one story from each](docs/images/results-quality.png)
+
+![How much the loss went up with each idea switched off](docs/images/ideas-switched-off.png)
+
+![Normal writing at 12.1 tokens a second, with drafts at 18.4](docs/images/speculative-decoding.png)
+
 ## Tests
 
 ```bash
 python -m pytest -q
 ```
 
-Each test checks one claim. For example: the fast chunked linear attention gives the same result as the slow token-by-token loop; the model cannot see future tokens; speculative decoding writes exactly the same text as normal decoding; Sinkhorn makes every row and column sum to 1.
+Each test checks one claim. For example: the fast chunked linear attention gives the same result as the slow token-by-token loop; the model cannot see future tokens; with randomness off (temperature 0), speculative decoding writes exactly the same text as normal decoding; Sinkhorn makes every row and column sum to 1.
 
 ## Speed on an M1 Pro (16 GB)
 
@@ -134,4 +165,4 @@ docs/             sources and notes
 
 Code licence: MIT (see [LICENSE](LICENSE)).
 
-Made by Bishrul Haq for the video "Can You Build Your Own AI at Home? I Built and Trained One From Scratch".
+Made by Bishrul Haq. [bishrulhaq.com](https://bishrulhaq.com)
