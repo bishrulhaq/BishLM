@@ -2,6 +2,8 @@
 
 ![Meet BishLM](docs/images/meet-bishlm.png)
 
+**Step-by-step article:** [Build Your Own AI at Home](https://bishrulhaq.com/posts/build-your-own-ai-at-home) walks through every part, the training and the results.
+
 A small language model, built from scratch in PyTorch and trained on a MacBook. It uses five ideas from three of 2026's best open models:
 
 | Idea | Borrowed from | What it does | Code |
@@ -165,4 +167,4 @@ docs/             sources and notes
 
 Code licence: MIT (see [LICENSE](LICENSE)).
 
-Made by Bishrul Haq. [bishrulhaq.com](https://bishrulhaq.com)
+Made by Bishrul Haq. [bishrulhaq.com](https://bishrulhaq.com) · [The full article](https://bishrulhaq.com/posts/build-your-own-ai-at-home)
