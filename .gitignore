@@ -1,6 +1,10 @@
 .venv/
 __pycache__/
-data/
+data/*
+!data/README.md
 runs/
+models/
+dist/
+bishlm-v1.zip
 ._*
 .DS_Store

@@ -37,6 +37,18 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Try it without training
+
+Download the trained model (about 99 MB) and chat with it:
+
+```bash
+python download_model.py
+python chat.py --ckpt models/instruct.pt
+python sample.py --ckpt models/bishlm.pt --prompt "Once upon a time"
+```
+
+`models/bishlm.pt` is the base model after 45,000 steps, and `models/instruct.pt` the instruction-tuned one. Both are weights only, stored as 16-bit floats (see [export_model.py](export_model.py)), with the same validation loss as the full training checkpoints. To run instruction tuning yourself, start from the download with `--init models/bishlm.pt`.
+
 ## 1. Prepare the data
 
 ```bash
@@ -156,6 +168,8 @@ sample.py         step 3
 prepare_instruct.py, chat.py   steps 4 and 5
 check_length.py   can it read more than 256 tokens?
 bench.py          speed test
+download_model.py the trained model, from bishrulhaq.com
+export_model.py   a training checkpoint -> a small weights-only file
 tests/            checks for every part
 docs/             sources and notes
 ```
