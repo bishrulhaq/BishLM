@@ -1,0 +1,6 @@
+# our model needs only these five libraries
+torch>=2.8      # PyTorch: tensors, training, the Mac GPU (MPS)
+numpy           # big lists of numbers (our token files)
+regex           # splitting text into words for the tokenizer
+matplotlib      # charts
+pytest          # running the tests
