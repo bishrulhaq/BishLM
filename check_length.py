@@ -1,12 +1,17 @@
 """Can BishLM read more than it was trained on?
 
     python check_length.py --ckpt runs/bishlm/ckpt.pt --length 1024
+    python check_length.py --ckpt models/bishlm.pt --length 1024    # the downloaded model
+
+It reads data/valid.bin, so run prepare_data.py first.
 
 BishLM trains on windows of 256 tokens. Here we give it longer windows and
 measure the loss in each part. If the loss stays the same, the model still
 understands; if it goes up, the window is too long for it.
 """
 import argparse
+import os
+import sys
 from dataclasses import replace
 
 import numpy as np
@@ -29,6 +34,8 @@ model = BishLM(cfg).to(device)
 model.load_state_dict(ck["model"], strict=False)  # strict=False: RoPE tables are rebuilt for the new length
 model.eval()
 
+if not os.path.exists("data/valid.bin"):
+    sys.exit("data/valid.bin is missing: run  python prepare_data.py  first (it downloads TinyStories).")
 data = np.memmap("data/valid.bin", dtype=np.uint16, mode="r")
 rng = np.random.default_rng(0)
 starts = rng.integers(0, len(data) - args.length - 1, args.rows)
